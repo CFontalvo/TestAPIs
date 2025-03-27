@@ -1,0 +1,1056 @@
+{
+	"info": {
+		"_postman_id": "8cf7a389-0195-4de1-ae84-f2dd5a103177",
+		"name": "Desafío 2: Go Rest en Postman - ChristianFontalvo",
+		"description": "Evaluar la capacidad del analista QA para diseñar y ejecutar pruebas API utilizando Postman, validando los métodos principales (GET, POST, PUT/PATCH, DELETE) sobre la API pública Go Rest  \n🎭 Escenario  \nLa empresa está evaluando la estabilidad y correcto funcionamiento de la API REST \"Go Rest\", verificando que los distintos endpoints funcionen adecuadamente ante diferentes tipos de solicitudes HTTP.  \n📝 Tareas  \nEn base a la API (Go Rest), debes crear y ejecutar requests distribuidas del siguiente modo:  \n\n1️ - 3 Requests tipo POST:  \n● Crear 2 usuarios nuevos utilizando datos generados de forma aleatoria (random).  \n● Generar un request que no devuelva la respuesta esperada.  \n\n2️ - 3 Requests tipo GET:  \n● 1 request para obtener todos los usuarios disponibles.  \n● 2 requests para obtener información específica de usuarios que creaste en el paso anterior utilizando su ID.  \n● Generar un request que no devuelva la respuesta esperada.  \n\n3️ - 3 Requests tipo PATCH o PUT:  \n● Actualizar los datos de los 2 usuarios que generaste en la etapa previa (POST).  \n● Generar un request que no devuelva la respuesta esperada.  \n\n4️ - 3 Requests tipo DELETE:  \n● Eliminar los 2 usuarios que generaste previamente con los requests POST.  \n● Generar uno que no devuelva la respuesta esperada.  \n\n🛠️ Consideraciones técnicas:  \n● Deberás autenticarte en la API utilizando una cuenta de Gmail, GitHub o Microsoft.  \n● Al iniciar sesión obtendrás un TOKEN que deberás incluir en el HEADER de autorización de cada request como Bearer Token.  \n● Para cada request, incluí assertions relevantes como por ejemplo el código de estado esperado (ej. Status 200 o 201). Sé creativo respecto a qué cosas probarías. Podes enviar tus comentarios de la razón por la que elegiste las assertions.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33567078"
+	},
+	"item": [
+		{
+			"name": "POST - Crear Usuario 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Establecer una variable global llamada 'randomEmail1' que contendrá un correo electrónico generado dinámicamente\r",
+							"// La función Math.random() se utiliza para crear un número aleatorio entre 0 y 1\r",
+							"// Multiplicamos ese número aleatorio por 10,000 y lo redondeamos hacia abajo con Math.floor() para obtener un número entero aleatorio de 0 a 9,999\r",
+							"// Este número aleatorio se concatena al nombre del correo, para evitar duplicados en la creación de usuarios\r",
+							"// Finalmente, el dominio personalizado '@christianfontalvo.com' se añade al final para personalizar el correo electrónico\r",
+							"pm.collectionVariables.set('randomEmail1', 'user' + Math.floor(Math.random() * 10000) + '@christianfontalvo.com');\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener la respuesta de la API en formato JSON\r",
+							"var jsonData = pm.response.json(); \r",
+							"\r",
+							"// Guardar el 'id', 'name' y 'email' del usuario recién creado en variables de entorno para su uso posterior\r",
+							"let response = pm.response.json();\r",
+							"pm.collectionVariables.set(\"user1_id\", response.id); \r",
+							"pm.collectionVariables.set(\"user1_name\", response.name);\r",
+							"pm.collectionVariables.set(\"user1_email\", response.email);\r",
+							"console.log(\"Variables actualizadas después de crear el usuario:\", {\r",
+							"  user1_id: pm.collectionVariables.get(\"user1_id\"),\r",
+							"  user1_name: pm.collectionVariables.get(\"user1_name\"),\r",
+							"  user1_email: pm.collectionVariables.get(\"user1_email\"),\r",
+							"});\r",
+							"\r",
+							"// Assertions\r",
+							"\r",
+							"// Assert 1: Validar que el código de estado sea 201 (Creado)\r",
+							"pm.test(\"Código de estado es 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"// Justificación: 201 es el código estándar HTTP que indica que un recurso fue creado exitosamente tras un POST.\r",
+							"\r",
+							"// Assert 2: Validar que la respuesta se reciba en menos de 1 segundo\r",
+							"pm.test(\"Tiempo de respuesta es menor a 1000 ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"// Justificación: Garantiza que la API responda de manera eficiente dentro de un tiempo aceptable.\r",
+							"\r",
+							"// Assert 3: Validar que el cuerpo de la respuesta tenga un campo 'id' no vacío\r",
+							"pm.test(\"El 'id' del usuario está presente y no es nulo\", function () {\r",
+							"    pm.expect(response.id).to.exist;\r",
+							"    pm.expect(response.id).to.not.be.null;\r",
+							"});\r",
+							"// Justificación: Asegura que el servidor haya devuelto un identificador válido para el nuevo usuario.\r",
+							"\r",
+							"// Assert 4: Validar que el campo 'name' coincida con la variable de colección\r",
+							"pm.test(\"El nombre del usuario es correcto\", function () {\r",
+							"    pm.expect(response.name).to.eql(pm.collectionVariables.get(\"user1_name\"));\r",
+							"});\r",
+							"// Justificación: Verifica que el nombre devuelto en la respuesta coincide con el valor esperado.\r",
+							"\r",
+							"// Assert 5: Validar que el campo 'email' tenga un formato válido\r",
+							"pm.test(\"El email tiene un formato válido\", function () {\r",
+							"    pm.expect(response.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/);\r",
+							"});\r",
+							"// Justificación: Asegura que el correo electrónico sigue un formato estándar válido.\r",
+							"\r",
+							"// Assert 6: Validar que el cuerpo de la respuesta contenga un objeto que incluya los campos esperados\r",
+							"pm.test(\"La respuesta contiene los campos esperados\", function () {\r",
+							"    pm.expect(response).to.have.property('id');\r",
+							"    pm.expect(response).to.have.property('name');\r",
+							"    pm.expect(response).to.have.property('email');\r",
+							"});\r",
+							"// Justificación: Asegura que la respuesta contiene los atributos clave que deberían haberse creado durante el proceso.\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Verificar que la respuesta tenga un código de estado 201 y un cuerpo de respuesta válido.",
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test('Response should have an ID', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\n                    {\n                        \"name\": \"Christian\",\n                        \"email\": \"{{randomEmail1}}\",\n                        \"gender\": \"male\",\n                        \"status\": \"active\"\n                    }\n                    "
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST - Crear Usuario 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Establecer una variable de la colección llamada 'randomEmail1' que contendrá un correo electrónico generado dinámicamente\r",
+							"// La función Math.random() se utiliza para crear un número aleatorio entre 0 y 1\r",
+							"// Multiplicamos ese número aleatorio por 10,000 y lo redondeamos hacia abajo con Math.floor() para obtener un número entero aleatorio de 0 a 9,999\r",
+							"// Este número aleatorio se concatena al nombre del correo, para evitar duplicados en la creación de usuarios\r",
+							"// Finalmente, el dominio personalizado '@christianfontalvo.com' se añade al final para personalizar el correo electrónico\r",
+							"pm.collectionVariables.set('randomEmail2', 'user' + Math.floor(Math.random() * 10000) + '@christianfontalvo.com');\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener la respuesta de la API en formato JSON\r",
+							"var jsonData = pm.response.json(); \r",
+							"\r",
+							"// Guardar el 'id', 'name' y 'email' del usuario recién creado en variables de entorno.\r",
+							"pm.collectionVariables.set('user2_id', jsonData.id);       \r",
+							"pm.collectionVariables.set('user2_name', jsonData.name);   \r",
+							"pm.collectionVariables.set('user2_email', jsonData.email); \r",
+							"\r",
+							"// Mensaje en consola para confirmar que las variables se han guardado.\r",
+							"console.log('Variables de entorno guardadas: ', {\r",
+							"    id: jsonData.id,\r",
+							"    name: jsonData.name,\r",
+							"    email: jsonData.email\r",
+							"});\r",
+							"\r",
+							"// Assertions\r",
+							"\r",
+							"// Assert 1: Validar que el código de estado es 200 o 201\r",
+							"pm.test(\"Código de estado es 200 o 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"});\r",
+							"// Justificación: Esto es útil cuando la API puede devolver 200 (OK) o 201 (Creado) dependiendo de la configuración del servidor.\r",
+							"\r",
+							"// Assert 2: Validar que el ID del usuario es un número positivo\r",
+							"pm.test(\"El 'id' del usuario es un número positivo\", function () {\r",
+							"    pm.expect(jsonData.id).to.be.a('number').and.to.be.above(0);\r",
+							"});\r",
+							"// Justificación: Asegura que el 'id' generado por el servidor es un número válido, positivo y mayor que cero.\r",
+							"\r",
+							"// Assert 3: Validar que el email guardado sea único y diferente al de 'user1'\r",
+							"pm.test(\"El email del usuario 2 es único y diferente al de usuario 1\", function () {\r",
+							"    pm.expect(jsonData.email).to.not.eql(pm.collectionVariables.get(\"user1_email\"));\r",
+							"});\r",
+							"// Justificación: Verifica que el nuevo usuario tiene un correo diferente al del usuario creado previamente, lo que ayuda a prevenir duplicados.\r",
+							"\r",
+							"// Assert 4: Validar que el header 'Server' existe y no está vacío\r",
+							"pm.test(\"El header 'Server' está presente\", function () {\r",
+							"    pm.expect(pm.response.headers.has('Server')).to.be.true;\r",
+							"    pm.expect(pm.response.headers.get('Server')).to.not.be.empty;\r",
+							"});\r",
+							"// Justificación: Evalúa que el servidor está enviando información sobre sí mismo en el header 'Server', lo que es útil para identificar el backend durante depuraciones.\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Verificar que la respuesta tenga un código de estado 201 y un cuerpo de respuesta válido.",
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test('Response should have an ID', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\n                    {\n                        \"name\": \"David\",\n                        \"email\": \"{{randomEmail2}}\",\n                        \"gender\": \"male\",\n                        \"status\": \"active\"\n                    }\n                    "
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST - Crear Usuario Inválido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener la respuesta de la API en formato JSON",
+							"var jsonData = pm.response.json(); ",
+							"",
+							"// Assert 1: Verificar que la API devuelve un código de estado 422 por datos inválidos",
+							"pm.test('El código de estado es 422', function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"// Justificación: Un código HTTP diferente (como 200 o 400) indicaría que la validación del backend no está funcionando correctamente.",
+							"",
+							"// Assert 2: Verificar que la respuesta es un array con mensajes de error",
+							"pm.test('La respuesta contiene un array de errores', function () {",
+							"    pm.expect(jsonData).to.be.an('array'); ",
+							"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+							"});",
+							"// Justificación: Esto es clave para garantizar que la API devuelva múltiples mensajes de error cuando hay datos inválidos.",
+							"",
+							"// Assert 3: Verificar que al menos un mensaje de error contiene información relevante",
+							"pm.test('Al menos un mensaje de error contiene información relevante', function () {",
+							"    var hasRelevantError = jsonData.some(function (error) {",
+							"        return /blank|invalid|male|female/i.test(error.message); ",
+							"    });",
+							"    pm.expect(hasRelevantError).to.be.true;",
+							"});",
+							"// Justificación: Evalúa si los mensajes de error devueltos son comprensibles para el usuario final y detallan el problema.",
+							"",
+							"// --- Nuevas Assertions --- ",
+							"",
+							"// Assert 4: Verificar que el campo de error esperado (por ejemplo, 'email') está presente en la respuesta",
+							"pm.test(\"La respuesta menciona el campo 'email' si es inválido\", function () {",
+							"    var fieldErrors = jsonData.map(error => error.field);",
+							"    pm.expect(fieldErrors).to.include('email');",
+							"});",
+							"// Justificación: Evalúa si la respuesta identifica campos clave como 'email' entre los datos inválidos.",
+							"",
+							"// Assert 5 (Actualizado): Validar que el header 'Content-Type' contiene 'application/json'",
+							"pm.test(\"El header 'Content-Type' contiene 'application/json'\", function () {",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+							"});",
+							"// Justificación: Esta verificación flexible asegura que el servidor envía contenido JSON, sin importar el charset adicional.",
+							"",
+							"// Assert 6: Verificar que el tiempo de respuesta sea aceptable (menor a 800 ms)",
+							"pm.test(\"El tiempo de respuesta es menor a 800 ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(800);",
+							"});",
+							"// Justificación: Esto ayuda a detectar problemas de rendimiento en las validaciones del backend."
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\n                    {\n                        \"name\": \"Invalid User\",\n                        \"email\": \"invalid-email\",\n                        \"gender\": \"unknown\",\n                        \"status\": \"inactive\"\n                    }\n                    "
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Obtener Todos los Usuarios",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// GET - Obtener Todos los Usuarios",
+							"",
+							"// Obtener el cuerpo de la respuesta y convertirlo en JSON",
+							"let response = pm.response.json();",
+							"",
+							"// Assert 1: Verificar que el código de estado sea 200 (OK)",
+							"pm.test(\"El código de estado es 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"// Justificación: Garantiza que la API está devolviendo un código 200, lo cual es el estándar para una solicitud exitosa.",
+							"",
+							"// Assert 2: Verificar que la respuesta contiene al menos un usuario",
+							"pm.test(\"La respuesta contiene al menos un usuario\", function () {",
+							"    pm.expect(response.length).to.be.greaterThan(0);",
+							"});",
+							"// Justificación: Evita resultados vacíos y asegura que el endpoint devuelve datos significativos.",
+							"",
+							"// Assert 3: Validar que el primer usuario tiene las propiedades esenciales ('id', 'name', 'email')",
+							"if (response.length > 0) {",
+							"    let firstUser = response[0];  // Tomar el primer usuario para validar sus propiedades",
+							"",
+							"    pm.test(\"El primer usuario tiene las propiedades 'id', 'name', y 'email'\", function () {",
+							"        pm.expect(firstUser).to.have.property('id');",
+							"        pm.expect(firstUser).to.have.property('name');",
+							"        pm.expect(firstUser).to.have.property('email');",
+							"    });",
+							"    // Justificación: Verifica que cada usuario contiene los campos esenciales esperados.",
+							"",
+							"    // Assert 4: Validar que el 'id' del primer usuario es un número positivo",
+							"    pm.test(\"El 'id' del primer usuario es un número positivo\", function () {",
+							"        pm.expect(firstUser.id).to.be.a('number').and.to.be.above(0);",
+							"    });",
+							"    // Justificación: Esto asegura que el 'id' es válido y mayor que 0, lo cual es estándar en registros generados por una base de datos.",
+							"",
+							"    // Assert 5: Verificar que el nombre del primer usuario no esté vacío",
+							"    pm.test(\"El nombre del primer usuario no está vacío\", function () {",
+							"        pm.expect(firstUser.name).to.be.a('string').and.to.not.be.empty;",
+							"    });",
+							"    // Justificación: Evalúa que el nombre es una cadena válida y que no está vacío, lo que es útil para evitar datos incorrectos o incompletos.",
+							"} else {",
+							"    console.log(\"No se encontraron usuarios en la respuesta.\");",
+							"}",
+							"// Assert 6: Verificar que el tiempo de respuesta es menor a 800 ms",
+							"pm.test(\"El tiempo de respuesta es menor a 800 ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(800);",
+							"});",
+							"// Justificación: Esta assertion ayuda a garantizar que el endpoint mantiene un rendimiento aceptable, detectando posibles problemas de latencia."
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users?page=1&per_page=20&sort=created_at&order=desc",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "per_page",
+							"value": "20"
+						},
+						{
+							"key": "sort",
+							"value": "created_at"
+						},
+						{
+							"key": "order",
+							"value": "desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Obtener Usuario 1 existente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener respuesta como JSON\r",
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Assert 1: Validar que el nombre del usuario coincida con la variable de la colección \"user1_name\"\r",
+							"pm.test(\"El nombre del usuario es correcto\", function () {\r",
+							"    pm.expect(response.name).to.eql(pm.collectionVariables.get(\"user1_name\"));\r",
+							"});\r",
+							"\r",
+							"// Assert 2: Validar que el email del usuario coincida con la variable de la colección \"user1_email\"\r",
+							"pm.test(\"El email del usuario es correcto\", function () {\r",
+							"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"user1_email\"));\r",
+							"});\r",
+							"\r",
+							"// Assert 3: Validar que el estado del usuario sea \"active\"\r",
+							"pm.test(\"El estado del usuario es 'active'\", function () {\r",
+							"    pm.expect(response.status).to.eql(\"active\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users/{{user1_id}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Obtener Usuario 2 existente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener respuesta como JSON\r",
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Assert 1: Validar que el nombre del usuario coincida con la variable de la colección \"user1_name\"\r",
+							"pm.test(\"El nombre del usuario es correcto\", function () {\r",
+							"    pm.expect(response.name).to.eql(pm.collectionVariables.get(\"user2_name\"));\r",
+							"});\r",
+							"\r",
+							"// Assert 2: Validar que el email del usuario coincida con la variable de la colección \"user1_email\"\r",
+							"pm.test(\"El email del usuario es correcto\", function () {\r",
+							"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"user2_email\"));\r",
+							"});\r",
+							"\r",
+							"// Assert 3: Validar que el estado del usuario sea \"active\"\r",
+							"pm.test(\"El estado del usuario es 'active'\", function () {\r",
+							"    pm.expect(response.status).to.eql(\"active\");\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users/{{user2_id}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Obtener Usuario Inexistente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Verificar código 200 para un usuario existente, y 404 para uno inexistente.",
+							"pm.test('Status code is 200 or 404', function () {",
+							"    pm.expect([200, 404]).to.include(pm.response.code);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/999999999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"999999999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH - Actualizar Usuario 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Assert 1: Verificar que la respuesta tenga un código de estado 200 (OK)",
+							"pm.test(\"El código de estado es 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Assert 2: Validar que el nombre del usuario ha sido actualizado correctamente",
+							"pm.test(\"El nombre del usuario ha sido actualizado\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.name).to.match(/Updated Name/);  // Cambiar \"Updated Name\" por el valor específico esperado, si corresponde.",
+							"});",
+							"",
+							"// Assert 3: Verificar que el ID del usuario no haya cambiado tras la actualización",
+							"pm.test(\"El ID del usuario permanece igual\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"user1_id\"));",
+							"});",
+							"// Justificación: Asegura que solo los campos previstos (como 'name') hayan cambiado, mientras que el ID se mantiene constante.",
+							"",
+							"// Assert 4: Validar que el header 'Content-Type' es JSON",
+							"pm.test(\"El header 'Content-Type' es 'application/json'\", function () {",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"// Justificación: Confirma que el servidor está devolviendo la respuesta en formato JSON.",
+							"",
+							"// Assert 5: Verificar que el tiempo de respuesta es inferior a 700 ms (rendimiento)",
+							"pm.test(\"El tiempo de respuesta es menor a 700 ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(700);",
+							"});",
+							"// Justificación: Evalúa la eficiencia de la operación PATCH y ayuda a identificar posibles problemas de latencia."
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\": \"Christian - Updated Name\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/users/{{user1_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"{{user1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH - Actualizar Usuario 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// PATCH - Actualizar Usuario 2",
+							"",
+							"// Obtener la respuesta JSON",
+							"const response = pm.response.json();",
+							"",
+							"// Crear el email esperado sin modificar el valor original",
+							"const expectedEmail = pm.collectionVariables.get(\"user2_name\") + pm.collectionVariables.get(\"user2_email\");",
+							"",
+							"// Assert 1: Verificar que el código de estado es 200",
+							"pm.test(\"El código de estado es 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Assert 2: Validar que el email del usuario se ha actualizado correctamente",
+							"pm.test(\"El email del usuario se ha actualizado correctamente\", function () {",
+							"    pm.expect(response.email).to.eql(expectedEmail);",
+							"});",
+							"",
+							"// Assert 3: Verificar que el ID del usuario no haya cambiado tras la actualización",
+							"pm.test(\"El ID del usuario permanece igual\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"user2_id\"));",
+							"});",
+							"// Justificación: Asegura que solo los campos previstos (como 'name') hayan cambiado, mientras que el ID se mantiene constante.",
+							"// Assert 4: Verificar que el tiempo de respuesta es inferior a 700 ms (rendimiento)",
+							"pm.test(\"El tiempo de respuesta es menor a 700 ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(700);",
+							"});",
+							"// Justificación: Evalúa la eficiencia de la operación PATCH y ayuda a identificar posibles problemas de latencia.",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{user2_name}}{{user2_email}}\"\r\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/users/{{user2_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"{{user2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH - Actualizar con Datos Incorrectos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener el cuerpo de la respuesta",
+							"let jsonData = pm.response.json();",
+							"",
+							"// Assertion 1: Verificar código de estado esperado (422 o 400 para inputs inválidos)",
+							"pm.test(\"Código de estado es 400 o 422\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 422]);  // Respuesta de error por datos inválidos",
+							"});",
+							"",
+							"// Assertion 2: Verificar que la respuesta contenga un error sobre el campo 'email'",
+							"pm.test(\"El mensaje de error menciona el campo 'email'\", function () {",
+							"    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;  // Confirmar que hay errores en un array",
+							"    pm.expect(jsonData[0]).to.have.property(\"field\", \"email\");  // Validar que el error corresponde al campo 'email'",
+							"    pm.expect(jsonData[0]).to.have.property(\"message\").that.includes(\"can't be blank\");  // Verificar que el mensaje menciona que el email está vacío",
+							"});",
+							"",
+							"// Assertion 3: Verificar que no se haya actualizado el campo 'name'",
+							"pm.test(\"El nombre del usuario no debe haberse actualizado\", function () {",
+							"    pm.expect(jsonData.name).to.not.eql(\"Updated Name\");",
+							"});",
+							"",
+							"// Mostrar mensaje en consola para más claridad",
+							"console.log(\"Respuesta de la API para datos inválidos: \", jsonData);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Updated Name\",\r\n    \"email\": \"\"\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{base_url}}/users/{{user1_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"{{user1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE - Eliminar Usuario 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verificar que el código de respuesta es 204 o 404 (usuario eliminado o no encontrado)",
+							"pm.test('El código de estado es 204 o 404', function () {",
+							"    pm.expect([204, 404]).to.include(pm.response.code);",
+							"});",
+							"",
+							"// Verificar que la respuesta no contiene cuerpo (en caso de 204)",
+							"pm.test('El cuerpo de la respuesta está vacío', function () {",
+							"    pm.expect(pm.response.text()).to.be.empty;",
+							"});",
+							"",
+							"// Verificar que el tiempo de respuesta es menor a 500 ms",
+							"pm.test('El tiempo de respuesta es razonable (menor a 500 ms)', function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/{{user1_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"{{user1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE - Eliminar Usuario 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verificar que el código de respuesta es 204 o 404 (usuario eliminado o no encontrado)",
+							"pm.test('El código de estado es 204 o 404', function () {",
+							"    pm.expect([204, 404]).to.include(pm.response.code);",
+							"});",
+							"",
+							"// Verificar que el header 'Content-Type' no está presente (para respuestas vacías con 204)",
+							"pm.test('El header Content-Type no está presente', function () {",
+							"    pm.expect(pm.response.headers.has('Content-Type')).to.be.false;",
+							"});",
+							"",
+							"// Verificar que el tiempo de respuesta es menor a 400 ms",
+							"pm.test('El tiempo de respuesta es menor a 400 ms', function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "989bcd3001bf7267c0276d2b364292f31da3641d43f4eb70dc803535a5a196dc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/{{user2_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"{{user2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE - Eliminar Usuario Inexistente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verificar que el código de estado es 404 (usuario inexistente)",
+							"pm.test('El código de estado es 404 (usuario no encontrado)', function () {",
+							"    pm.expect(pm.response.code).to.eql(404);",
+							"});",
+							"",
+							"// Verificar que la respuesta contiene el mensaje esperado",
+							"pm.test('La respuesta contiene el mensaje \"Resource not found\"', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('message', 'Resource not found');",
+							"});",
+							"",
+							"// Verificar que el tiempo de respuesta es razonable (menor a 600 ms)",
+							"pm.test('El tiempo de respuesta es razonable (menor a 600 ms)', function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(600);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/999999999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						"999999999"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "userName",
+			"value": ""
+		},
+		{
+			"key": "userEmail",
+			"value": ""
+		},
+		{
+			"key": "user1_id",
+			"value": ""
+		},
+		{
+			"key": "user1_name",
+			"value": ""
+		},
+		{
+			"key": "user1_email",
+			"value": ""
+		},
+		{
+			"key": "user2_id",
+			"value": ""
+		},
+		{
+			"key": "user2_name",
+			"value": ""
+		},
+		{
+			"key": "user2_email",
+			"value": ""
+		},
+		{
+			"key": "randomEmail1",
+			"value": ""
+		},
+		{
+			"key": "randomEmail2",
+			"value": ""
+		},
+		{
+			"key": "baseUrl",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
